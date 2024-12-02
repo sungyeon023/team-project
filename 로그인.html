@@ -180,7 +180,7 @@
         // 회원가입 제출
         signupForm.addEventListener('submit', event => {
             event.preventDefault();
-            if (similarityScore < 90) {
+            if (similarityScore == "") {
                 alert('얼굴 일치율이 90% 이상이어야 회원가입이 가능합니다.');
                 return;
             }
