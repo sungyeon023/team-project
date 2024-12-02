@@ -19,7 +19,7 @@
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-        h2 {
+        h2, h3 {
             text-align: center;
         }
         label {
@@ -35,95 +35,159 @@
             border-radius: 4px;
         }
         button {
-            width: 100%;
-            padding: 10px;
             background: #007BFF;
             color: white;
             border: none;
             border-radius: 4px;
-            margin-top: 15px;
+            padding: 10px;
             cursor: pointer;
+            margin-top: 15px;
+            width: 100%;
         }
         button:hover {
             background: #0056b3;
+        }
+        .description {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background-color: #E6F7FF;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        .description p {
+            width: 75%;
+            margin: 0;
+        }
+        .description input {
+            width: auto;
+            margin-left: auto;
+            transform: scale(1.5);
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- 이상형 설정 -->
-        <div>
-            <form id="ideal-form">
-                <label for="animal-type">선호하는 얼굴상:</label>
-                <select name="animal_type" id="animal-type">
-                    <option value="">선택하세요</option>
-                </select>
+        <h2>이상형 설정</h2>
+        <form id="ideal-form">
+            <label for="animal-type">선호하는 얼굴상:</label>
+            <select name="animal_type" id="animal-type">
+                <option value="">선택하세요</option>
+            </select>
 
-                <label for="preferred-age">선호하는 나이대:</label>
-                <select name="preferred_age" id="preferred-age">
-                    <option value="">나이 선택</option>
-                </select>
+            <label for="preferred-age">선호하는 나이대:</label>
+            <select name="preferred_age" id="preferred-age">
+                <option value="">나이 선택</option>
+            </select>
 
-                <label for="preferred-height">선호하는 키 (cm):</label>
-                <input type="number" name="preferred_height" id="preferred-height" min="140" max="200" step="1" placeholder="예: 170">
+            <label for="preferred-height">선호하는 키 (cm):</label>
+            <input type="number" name="preferred_height" id="preferred-height" min="140" max="200" step="1" placeholder="예: 170">
 
-                <button type="submit">저장</button>
-            </form>
-        </div>
+            <h3>디스크 간 연관성 체크</h3>
+            <button type="button" id="show-relationships">연관성 확인</button>
+            <div id="relationship-list" style="display: none;">
+                <!-- 연관성 데이터가 동적으로 추가됩니다 -->
+            </div>
+
+            <button type="submit">저장</button>
+        </form>
+
         <button id="logout">로그아웃</button>
     </div>
 
     <script>
-        // 예제 데이터: 로그인한 사용자의 정보 (실제 데이터는 서버에서 가져와야 함)
-        const userData = {
-            username: "testUser",
-            gender: "male" // "male" 또는 "female"
-        };
-
-        // 성별에 따라 동물상 옵션 생성
-        const animalTypeSelect = document.getElementById("animal-type");
-
-        function populateAnimalOptions(gender) {
-            // 기존 옵션 초기화
-            animalTypeSelect.innerHTML = '<option value="">선택하세요</option>';
-
-            // 성별에 따른 동물상 옵션
-            const animalOptions = {
-                male: ["강아지상", "고양이상", "토끼상"],
-                female: ["공룡상", "여우상", "곰상"]
-            };
-
-            const options = gender === "male" ? animalOptions.male : animalOptions.female;
-
-            options.forEach((animal) => {
-                const option = document.createElement("option");
-                option.value = animal;
-                option.textContent = animal;
-                animalTypeSelect.appendChild(option);
-            });
-        }
-
-        // 동적으로 나이대 옵션 추가
-        const ageSelect = document.getElementById("preferred-age");
-        function populateAgeOptions() {
-            for (let age = 20; age <= 40; age += 2) {
-                const option = document.createElement("option");
-                option.value = age;
-                option.textContent = `${age}살`;
-                ageSelect.appendChild(option);
+        const discRelationships = [
+            {
+                title: "Dominance(D) 스타일:",
+                description: "D 스타일은 강렬하고 목표 지향적인 로맨스를 추구합니다. 그들은 주도권을 잡아 관계를 이끌어 나가며, 명확한 규칙과 방향성을 설정합니다. 도전 과제를 극복하고 성취감을 느끼는 것을 중요시하며, 자신의 요구와 기대를 명확히 표현합니다. 효율성과 결과를 중시하는 이 스타일은 직설적인 의사소통을 통해 관계를 주도하려 합니다."
+            },
+            {
+                title: "Influence(I) 스타일:",
+                description: "I 스타일은 에너지 넘치고 매력적인 사교성을 기반으로 관계를 형성합니다. 그들은 긍정적인 피드백을 즐기고, 새로운 경험과 설렘으로 가득 찬 데이트를 선호합니다. 다채롭고 즉흥적인 활동을 통해 자신과 상대방의 세계를 확장하는 데 집중하며, 감정적으로 쉽게 빠져드는 열정적인 면모를 보입니다."
+            },
+            {
+                title: "Conscientiousness(C) 스타일:",
+                description: "C 스타일은 신중하고 책임감 있는 태도로 사랑을 대합니다. 그들은 관계의 가능성과 상대방의 모든 면을 분석하며, 단일한 파트너와의 깊은 유대감을 형성하는 데 집중합니다. 합리적이고 계획적인 접근 방식을 통해 신뢰할 수 있는 장기적인 관계를 구축하려 하며, 의미 있는 시간을 소중히 여깁니다."
+            },
+            {
+                title: "Steadiness(S) 스타일:",
+                description: "S 스타일은 인내심 있고 안정적인 관계를 중시합니다. 그들은 신뢰와 조화를 기반으로 한 깊은 연결을 추구하며, 상대방의 필요에 기꺼이 맞추려는 협력적인 태도를 보입니다. 관계를 점진적으로 발전시키며, 진심 어린 관심과 배려를 통해 서로에게 안정감을 제공합니다."
             }
-        }
+        ];
 
-        // 로그아웃 처리
+        const relationshipList = document.getElementById("relationship-list");
+        const showRelationshipsButton = document.getElementById("show-relationships");
+
+        showRelationshipsButton.addEventListener("click", () => {
+            if (relationshipList.style.display === "block") {
+                relationshipList.style.display = "none";
+                showRelationshipsButton.textContent = "연관성 확인";
+                return;
+            }
+
+            relationshipList.innerHTML = "";
+            relationshipList.style.display = "block";
+
+            discRelationships.forEach((relationship) => {
+                const relationshipDiv = document.createElement("div");
+                relationshipDiv.className = "description";
+
+                const description = document.createElement("p");
+                description.innerHTML = `<strong>${relationship.title}</strong> ${relationship.description}`;
+
+                const radioButton = document.createElement("input");
+                radioButton.type = "radio";
+                radioButton.name = "relationship";
+                radioButton.value = relationship.title;
+
+                relationshipDiv.appendChild(description);
+                relationshipDiv.appendChild(radioButton);
+
+                relationshipList.appendChild(relationshipDiv);
+            });
+
+            showRelationshipsButton.textContent = "닫기";
+        });
+
         const logoutButton = document.getElementById("logout");
         logoutButton.addEventListener("click", () => {
             alert("로그아웃 되었습니다!");
-            window.location.href = "login.html"; // 로그인 페이지로 이동
+            window.location.href = "login.html";
         });
 
-        // 페이지 로드 시 초기화
+        function populateAnimalOptions(gender) {
+            const animalTypeSelect = document.getElementById("animal-type");
+            animalTypeSelect.innerHTML = '<option value="">선택하세요</option>';
+
+            const options = gender === "male" 
+                ? ["강아지", "토끼", "고양이", "사슴", "여우"]
+                : ["강아지", "공룡", "곰", "토끼", "고양이"];
+
+            options.forEach(option => {
+                const opt = document.createElement("option");
+                opt.value = option;
+                opt.textContent = option;
+                animalTypeSelect.appendChild(opt);
+            });
+        }
+
+        function populateAgeOptions() {
+            const preferredAgeSelect = document.getElementById("preferred-age");
+            preferredAgeSelect.innerHTML = '<option value="">나이 선택</option>';
+
+            for (let age = 20; age <= 40; age += 3) {
+                const opt = document.createElement("option");
+                const rangeStart = age;
+                const rangeEnd = Math.min(age + 2, 40);
+                opt.value = `${rangeStart}~${rangeEnd}`;
+                opt.textContent = `${rangeStart}~${rangeEnd}살`;
+                preferredAgeSelect.appendChild(opt);
+            }
+        }
+
         document.addEventListener("DOMContentLoaded", () => {
-            // 동물상 및 나이대 옵션 초기화
+            const userData = { gender: "male" }; // 테스트용 기본값
             populateAnimalOptions(userData.gender);
             populateAgeOptions();
         });
