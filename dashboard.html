@@ -3,14 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>대시보드</title>
+    <title>HeartMaker</title>
     <style>
+        :root {
+            --main-title-color: #ff478a; /* 기본값: 토마토 색상 */
+            --sub-title-color: #ff478a; /* 기본값: 파란색 */
+        }
+
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
+            background-color: #f9f4f6;
             margin: 0;
             padding: 20px;
         }
+
         .container {
             max-width: 600px;
             margin: auto;
@@ -19,21 +25,39 @@
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
+
+        h1 {
+            text-align: center;
+            color: var(--main-title-color);
+        }
+
         h2 {
             text-align: center;
+            color: var(--sub-title-color);
         }
+
         label {
             display: block;
             margin-top: 10px;
             font-weight: bold;
         }
+
         input, select {
-            width: 100%;
             padding: 8px;
-            margin-top: 5px;
-            border: 1px solid #ccc;
+            border: 1px solid #cccccc;
             border-radius: 4px;
         }
+
+        input[type="number"]::-webkit-inner-spin-button, 
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input[type="number"] {
+            -moz-appearance: textfield; /* Firefox용 */
+        }
+
         .logout-button {
             position: absolute;
             top: 10px;
@@ -45,9 +69,11 @@
             cursor: pointer;
             padding: 5px;
         }
+
         .logout-button:hover {
             color: #0056b3;
         }
+
         .description {
             display: flex;
             align-items: center;
@@ -57,15 +83,18 @@
             border-radius: 8px;
             margin-top: 15px;
         }
+
         .description p {
             width: 75%;
             margin: 0;
         }
+
         .description input {
             width: auto;
             margin-left: auto;
             transform: scale(1.5);
         }
+
         .save-button {
             position: absolute;
             bottom: 10px;
@@ -77,16 +106,35 @@
             padding: 10px;
             cursor: pointer;
         }
+
         .save-button:hover {
             background: #0056b3;
+        }
+
+        .height-input-group {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .height-input-group input {
+            width: 40%;
+            text-align: center;
+        }
+
+        .height-input-group span {
+            font-weight: bold;
+            font-size: 18px;
         }
     </style>
 </head>
 <body>
+    <h1>HeartMaker</h1>
     <div class="container">
         <h2>이상형 설정</h2>
         <form id="ideal-form">
-            <label for="animal-type">선호하는 얼굴상:</label>
+            <label for="animal-type">선호하는 얼굴상을 골라주세요:</label>
             <select name="animal_type" id="animal-type">
                 <option value="">선택하세요</option>
             </select>
@@ -96,10 +144,14 @@
                 <option value="">나이 선택</option>
             </select>
 
-            <label for="preferred-height">선호하는 키 (cm):</label>
-            <input type="number" name="preferred_height" id="preferred-height" min="140" max="200" step="1" placeholder="예: 170">
+            <label>선호하는 키를 알려주세요 (cm):</label>
+            <div class="height-input-group">
+                <input type="number" id="min-height" name="min_height" min="140" max="210" placeholder="최소">
+                <span>~</span>
+                <input type="number" id="max-height" name="max_height" min="140" max="210" placeholder="최대">
+            </div>
 
-            <label for="disc-preference">선호하는 DISC 유형:</label>
+            <label for="disc-preference">선호하는 DISC 유형을 골라주세요:</label>
             <button type="button" id="show-relationships">연관성 확인</button>
             <div id="relationship-list" style="display: none;">
                 <!-- 연관성 데이터가 동적으로 추가됩니다 -->
@@ -115,19 +167,19 @@
         const discRelationships = [
             {
                 title: "Dominance(D) 스타일:",
-                description: "D 스타일은 강렬하고 목표 지향적인 로맨스를 추구합니다. 그들은 주도권을 잡아 관계를 이끌어 나가며, 명확한 규칙과 방향성을 설정합니다. 도전 과제를 극복하고 성취감을 느끼는 것을 중요시하며, 자신의 요구와 기대를 명확히 표현합니다. 효율성과 결과를 중시하는 이 스타일은 직설적인 의사소통을 통해 관계를 주도하려 합니다."
+                description: "D 스타일은 강렬하고 목표 지향적인 로맨스를 추구합니다."
             },
             {
                 title: "Influence(I) 스타일:",
-                description: "I 스타일은 에너지 넘치고 매력적인 사교성을 기반으로 관계를 형성합니다. 그들은 긍정적인 피드백을 즐기고, 새로운 경험과 설렘으로 가득 찬 데이트를 선호합니다. 다채롭고 즉흥적인 활동을 통해 자신과 상대방의 세계를 확장하는 데 집중하며, 감정적으로 쉽게 빠져드는 열정적인 면모를 보입니다."
+                description: "I 스타일은 에너지 넘치고 매력적인 사교성을 기반으로 관계를 형성합니다."
             },
             {
                 title: "Conscientiousness(C) 스타일:",
-                description: "C 스타일은 신중하고 책임감 있는 태도로 사랑을 대합니다. 그들은 관계의 가능성과 상대방의 모든 면을 분석하며, 단일한 파트너와의 깊은 유대감을 형성하는 데 집중합니다. 합리적이고 계획적인 접근 방식을 통해 신뢰할 수 있는 장기적인 관계를 구축하려 하며, 의미 있는 시간을 소중히 여깁니다."
+                description: "C 스타일은 신중하고 책임감 있는 태도로 사랑을 대합니다."
             },
             {
                 title: "Steadiness(S) 스타일:",
-                description: "S 스타일은 인내심 있고 안정적인 관계를 중시합니다. 그들은 신뢰와 조화를 기반으로 한 깊은 연결을 추구하며, 상대방의 필요에 기꺼이 맞추려는 협력적인 태도를 보입니다. 관계를 점진적으로 발전시키며, 진심 어린 관심과 배려를 통해 서로에게 안정감을 제공합니다."
+                description: "S 스타일은 인내심 있고 안정적인 관계를 중시합니다."
             }
         ];
 
