@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원가입 및 로그인 시스템</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f9;
+        }
+        .container {
+            max-width: 500px;
+            margin: auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            margin-top: 15px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .hidden {
+            display: none;
+        }
+        .result {
+            margin-top: 10px;
+            font-weight: bold;
+            text-align: center;
+            font-size: 1.5rem;
+        }
+        .result.positive {
+            color: green;
+        }
+        .result.negative {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <!-- 로그인 페이지 -->
+    <div class="container" id="login-page">
+        <h1>로그인</h1>
+        <form id="login-form">
+            <label for="login-username">아이디</label>
+            <input type="text" id="login-username" required>
+
+            <label for="login-password">비밀번호</label>
+            <input type="password" id="login-password" required>
+
+            <button type="submit">로그인</button>
+        </form>
+        <button id="go-to-signup">회원가입 하러가기</button>
+    </div>
+
+    <!-- 회원가입 페이지 -->
+    <div class="container hidden" id="signup-page">
+        <h1>회원가입</h1>
+        <form id="signup-form">
+            <label for="signup-username">아이디</label>
+            <input type="text" id="signup-username" required>
+
+            <label for="signup-password">비밀번호</label>
+            <input type="password" id="signup-password" required>
+
+            <label for="signup-gender">성별</label>
+            <select id="signup-gender" required>
+                <option value="">선택</option>
+                <option value="male">남성</option>
+                <option value="female">여성</option>
+                <option value="other">기타</option>
+            </select>
+
+            <label for="signup-age">나이</label>
+            <input type="number" id="signup-age" required>
+
+            <!-- 얼굴 확인 -->
+            <label>프로필 사진 업로드</label>
+            <input type="file" id="upload-image" accept="image/*" required>
+            <button type="button" id="start-camera">카메라 시작</button>
+            <video id="webcam" autoplay playsinline></video>
+            <button type="button" id="compare-face">얼굴 일치율 테스트</button>
+            <p class="result" id="result">결과: </p>
+
+            <button type="submit" id="signup-submit" disabled>회원가입 완료</button>
+        </form>
+    </div>
+
+    <script>
+        const loginPage = document.getElementById('login-page');
+        const signupPage = document.getElementById('signup-page');
+        const goToSignupButton = document.getElementById('go-to-signup');
+        const loginForm = document.getElementById('login-form');
+        const signupForm = document.getElementById('signup-form');
+        const startCameraButton = document.getElementById('start-camera');
+        const compareFaceButton = document.getElementById('compare-face');
+        const signupSubmitButton = document.getElementById('signup-submit');
+        const webcamVideo = document.getElementById('webcam');
+        const resultParagraph = document.getElementById('result');
+        const uploadImageInput = document.getElementById('upload-image');
+
+        let registeredUser = null; // 저장된 회원 정보
+        let uploadedImage = null;
+        let similarityScore = 0;
+
+        // 로그인 페이지 -> 회원가입 페이지로 이동
+        goToSignupButton.addEventListener('click', () => {
+            loginPage.classList.add('hidden');
+            signupPage.classList.remove('hidden');
+        });
+
+        // 카메라 시작
+        startCameraButton.addEventListener('click', () => {
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(stream => {
+                    webcamVideo.srcObject = stream;
+                })
+                .catch(error => {
+                    alert('카메라를 사용할 수 없습니다: ' + error);
+                });
+        });
+
+        // 프로필 사진 업로드 처리
+        uploadImageInput.addEventListener('change', event => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    uploadedImage = reader.result; // Base64로 저장
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // 얼굴 일치율 비교
+        compareFaceButton.addEventListener('click', () => {
+            if (!uploadedImage) {
+                alert('프로필 사진을 업로드하세요!');
+                return;
+            }
+
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.width = webcamVideo.videoWidth;
+            canvas.height = webcamVideo.videoHeight;
+            context.drawImage(webcamVideo, 0, 0, canvas.width, canvas.height);
+            const webcamImage = canvas.toDataURL('image/jpeg');
+
+            // 서버로 전송 (얼굴 비교)
+            fetch('/compare', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    uploadedImage: uploadedImage,
+                    webcamImage: webcamImage
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    similarityScore = data.similarity;
+
+                    // 결과 표시
+                    if (similarityScore >= 60) {
+                        resultParagraph.textContent = "결과: O";
+                        resultParagraph.classList.add('positive');
+                        resultParagraph.classList.remove('negative');
+                        signupSubmitButton.disabled = false;
+                    } else {
+                        resultParagraph.textContent = "결과: X";
+                        resultParagraph.classList.add('negative');
+                        resultParagraph.classList.remove('positive');
+                        signupSubmitButton.disabled = true;
+                    }
+                })
+                .catch(error => {
+                    alert('얼굴 비교 중 오류가 발생했습니다: ' + error);
+                });
+        });
+
+        // 회원가입 완료 처리
+        signupForm.addEventListener('submit', event => {
+            event.preventDefault();
+
+            if (similarityScore < 60) {
+                alert('얼굴 일치율이 60% 이상이어야 회원가입이 가능합니다.');
+                return;
+            }
+
+            registeredUser = {
+                username: document.getElementById('signup-username').value,
+                password: document.getElementById('signup-password').value,
+                gender: document.getElementById('signup-gender').value,
+                age: document.getElementById('signup-age').value
+            };
+
+            alert('회원가입이 완료되었습니다!');
+            signupForm.reset();
+            signupSubmitButton.disabled = true;
+
+            // 회원가입 후 로그인 페이지로 이동
+            signupPage.classList.add('hidden');
+            loginPage.classList.remove('hidden');
+        });
+
+        // 로그인 처리
+        loginForm.addEventListener('submit', event => {
+            event.preventDefault();
+
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+
+            if (!registeredUser) {
+                alert('회원가입을 먼저 진행해주세요.');
+                return;
+            }
+
+            if (username === registeredUser.username && password === registeredUser.password) {
+                alert(`로그인 성공! 환영합니다, ${registeredUser.username}님!`);
+            } else {
+                alert('아이디 또는 비밀번호가 일치하지 않습니다.');
+            }
+        });
+    </script>
+</body>
+</html>
