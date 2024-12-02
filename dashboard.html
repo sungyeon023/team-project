@@ -19,7 +19,7 @@
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-        h2, h3 {
+        h2 {
             text-align: center;
         }
         label {
@@ -34,18 +34,19 @@
             border: 1px solid #ccc;
             border-radius: 4px;
         }
-        button {
-            background: #007BFF;
-            color: white;
+        .logout-button {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: transparent;
+            color: #007BFF;
             border: none;
-            border-radius: 4px;
-            padding: 10px;
+            font-size: 12px;
             cursor: pointer;
-            margin-top: 15px;
-            width: 100%;
+            padding: 5px;
         }
-        button:hover {
-            background: #0056b3;
+        .logout-button:hover {
+            color: #0056b3;
         }
         .description {
             display: flex;
@@ -64,6 +65,20 @@
             width: auto;
             margin-left: auto;
             transform: scale(1.5);
+        }
+        .save-button {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 10px;
+            cursor: pointer;
+        }
+        .save-button:hover {
+            background: #0056b3;
         }
     </style>
 </head>
@@ -84,16 +99,16 @@
             <label for="preferred-height">선호하는 키 (cm):</label>
             <input type="number" name="preferred_height" id="preferred-height" min="140" max="200" step="1" placeholder="예: 170">
 
-            <h3>디스크 간 연관성 체크</h3>
+            <label for="disc-preference">선호하는 DISC 유형:</label>
             <button type="button" id="show-relationships">연관성 확인</button>
             <div id="relationship-list" style="display: none;">
                 <!-- 연관성 데이터가 동적으로 추가됩니다 -->
             </div>
 
-            <button type="submit">저장</button>
+            <button type="submit" id="save-button" class="save-button">저장</button>
         </form>
 
-        <button id="logout">로그아웃</button>
+        <button id="logout" class="logout-button">로그아웃</button>
     </div>
 
     <script>
