@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원가입 및 로그인</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f9;
+        }
+        .container {
+            max-width: 500px;
+            margin: auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            margin-top: 15px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .link {
+            display: block;
+            text-align: center;
+            margin-top: 10px;
+            color: #007BFF;
+            cursor: pointer;
+        }
+        .link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <!-- 로그인 페이지 -->
+    <div id="login-container" class="container">
+        <h1>로그인</h1>
+        <form id="login-form">
+            <label for="login-username">이메일</label>
+            <input type="email" id="login-username" required>
+
+            <label for="login-password">비밀번호</label>
+            <input type="password" id="login-password" required>
+
+            <button type="submit">로그인</button>
+            <p class="link" id="to-signup">회원가입 페이지로 이동</p>
+        </form>
+    </div>
+
+    <!-- 회원가입 페이지 -->
+    <div id="signup-container" class="container" style="display:none;">
+        <h1>회원가입</h1>
+        <form id="signup-form">
+            <label for="username">이메일</label>
+            <input type="email" id="username" required>
+
+            <label for="password">비밀번호</label>
+            <input type="password" id="password" required>
+
+            <button type="submit">회원가입</button>
+        </form>
+    </div>
+
+    <script type="module">
+        // Firebase SDK import
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-analytics.js";
+        import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+        apiKey: "AIzaSyB49sSBl67u78ODuIf4NIwiYwe7PrA5Xyk",
+        authDomain: "online-meeting-untitled.firebaseapp.com",
+        projectId: "online-meeting-untitled",
+        storageBucket: "online-meeting-untitled.firebasestorage.app",
+        messagingSenderId: "785546577823",
+        appId: "1:785546577823:web:b3e70764c666a526515faa",
+        measurementId: "G-Z891JG81CZ"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // HTML 요소 참조
+        const signupContainer = document.getElementById('signup-container');
+        const loginContainer = document.getElementById('login-container');
+        const signupForm = document.getElementById('signup-form');
+        const loginForm = document.getElementById('login-form');
+        const toSignup = document.getElementById('to-signup');
+
+        // 회원가입 페이지로 이동
+        toSignup.addEventListener('click', function() {
+            loginContainer.style.display = 'none';
+            signupContainer.style.display = 'block';
+        });
+
+        // 회원가입 처리
+        signupForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const email = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            createUserWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    alert('회원가입 성공!');
+                    signupContainer.style.display = 'none';
+                    loginContainer.style.display = 'block';
+                    signupForm.reset();
+                })
+                .catch((error) => {
+                    console.error('회원가입 오류:', error.message);
+                    alert(`회원가입 오류: ${error.message}`);
+                });
+        });
+
+        // 로그인 처리
+        loginForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const email = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+
+            signInWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    alert('로그인 성공!');
+                    // 대시보드로 리다이렉트
+                    window.location.href = "dashboard.html";
+                })
+                .catch((error) => {
+                    console.error('로그인 오류:', error.message);
+                    alert(`로그인 오류: ${error.message}`);
+                });
+        });
+    </script>
+</body>
+</html>
